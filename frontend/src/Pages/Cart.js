@@ -1,8 +1,9 @@
-import React, { Fragment } from "react";
+import React, { Fragment, useState } from "react";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 
 const Cart = ({ cartitems, setCartItems }) => {
+  const [complete, setcomplete] = useState(false);
   function increaseQty(item) {
     if (item.product.stock == item.qty) {
       toast.info("Max Quantity Reached");
@@ -25,6 +26,7 @@ const Cart = ({ cartitems, setCartItems }) => {
         return i;
       });
       setCartItems(updateItems);
+      setcomplete(true);
     }
   }
   function removeItem(item) {
@@ -35,7 +37,17 @@ const Cart = ({ cartitems, setCartItems }) => {
     });
     setCartItems(updateItems);
   }
-  return  cartitems.length >0 ?
+  function placeOrderHandler() {
+    fetch(process.env.REACT_APP_API_URL + "/orders/", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(cartitems),
+    }).then(() => {
+      setCartItems([]);
+      toast.success("order placed succesfully");
+    });
+  }
+  return cartitems.length > 0 ? (
     <Fragment>
       <div className="container container-fluid">
         <h2 className="mt-5">
@@ -110,23 +122,43 @@ const Cart = ({ cartitems, setCartItems }) => {
               <hr />
               <p>
                 Subtotal:{" "}
-                <span className="order-summary-values">{cartitems.reduce((acc,item)=>(acc +item.qty),0)} (Units)</span>
+                <span className="order-summary-values">
+                  {cartitems.reduce((acc, item) => acc + item.qty, 0)} (Units)
+                </span>
               </p>
               <p>
                 Est. total:{" "}
-                <span className="order-summary-values">${cartitems.reduce((acc,item)=>(acc +item.product.price* item.qty),0)}</span>
+                <span className="order-summary-values">
+                  $
+                  {cartitems.reduce(
+                    (acc, item) => acc + item.product.price * item.qty,
+                    0
+                  )}
+                </span>
               </p>
 
               <hr />
-              <button id="checkout_btn" className="btn btn-primary btn-block">
+              <button
+                id="checkout_btn"
+                className="btn btn-primary btn-block"
+                onClick={placeOrderHandler}
+              >
                 Place Order
               </button>
             </div>
           </div>
         </div>
       </div>
-    </Fragment>:<h2 className="fw-bold text-center pt-3" style={{"fontFamily":"cursive"}}>Your cart is empty 🤠</h2>
-  
+    </Fragment>
+  ) : !complete ? (
+    <h2 className="fw-bold text-center pt-3" style={{ fontFamily: "cursive" }}>
+      Your cart is empty 🤠
+    </h2>
+  ) : (
+    <h2 className="fw-bold text-center pt-3" style={{ fontFamily: "cursive" }}>
+      Order Completed .
+    </h2>
+  );
 };
 
 export default Cart;
