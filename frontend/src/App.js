@@ -7,6 +7,7 @@ import ProductDetail from "./Pages/ProductDetail";
 import { useState } from "react";
 import {ToastContainer} from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import Cart from "./Pages/Cart";
 function App() {
   const [cartitems, setCartItems] = useState([]);
   return (
@@ -26,6 +27,8 @@ function App() {
               />
             }
           />
+          <Route path="/cart" element={<Cart  cartitems={cartitems} setCartItems={setCartItems} />} />
+            
         </Routes>
         <Footer />
       </Router>
